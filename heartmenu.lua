@@ -1,5 +1,5 @@
 -- =====================================
--- ❤️ HEART MENU - BEN DU THUYEN 101
+-- ❤️ HEART MENU - BẾN DU THUYỀN 101 (ALPHA)
 -- =====================================
 
 local Players = game:GetService("Players")
@@ -11,10 +11,10 @@ local gui = Instance.new("ScreenGui", player.PlayerGui)
 gui.Name = "HeartMenu"
 gui.ResetOnSpawn = false
 
--- ===== HEART BUTTON =====
+-- ===== HEART BUTTON (TRÊN GÓC TRÁI) =====
 local heart = Instance.new("ImageButton", gui)
 heart.Size = UDim2.new(0,60,0,60)
-heart.Position = UDim2.new(0,20,0,200)
+heart.Position = UDim2.new(0,20,0,20)
 heart.BackgroundColor3 = Color3.fromRGB(255,80,120)
 heart.Image = "rbxassetid://7072718367"
 heart.BorderSizePixel = 0
@@ -22,8 +22,8 @@ Instance.new("UICorner", heart).CornerRadius = UDim.new(1,0)
 
 -- ===== MENU =====
 local menu = Instance.new("Frame", gui)
-menu.Size = UDim2.new(0,240,0,300)
-menu.Position = UDim2.new(0,100,0,180)
+menu.Size = UDim2.new(0,240,0,420)
+menu.Position = UDim2.new(0,90,0,20)
 menu.BackgroundColor3 = Color3.fromRGB(30,30,30)
 menu.Visible = false
 menu.BorderSizePixel = 0
@@ -55,13 +55,26 @@ end
 
 -- ===== FUNCTIONS =====
 
--- Tele Wood + Scrap
-makeBtn("📦 Tele Gỗ + Phế Liệu", 50, function()
+-- Tele Gỗ + Phế Liệu theo người
+local followItems = {}
+makeBtn("📦 Kéo Gỗ + Phế Liệu", 50, function()
 	local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
+	followItems = {}
 	for _,v in pairs(workspace:GetDescendants()) do
 		if v:IsA("BasePart") and (v.Name=="Wood" or v.Name=="Scrap") then
-			v.CFrame = hrp.CFrame * CFrame.new(0,0,-3)
+			v.Anchored = false
+			table.insert(followItems, v)
+		end
+	end
+end)
+
+RunService.Heartbeat:Connect(function()
+	local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+	for _,v in pairs(followItems) do
+		if v and v.Parent then
+			v.CFrame = hrp.CFrame * CFrame.new(0,0,-4)
 		end
 	end
 end)
@@ -77,7 +90,7 @@ makeBtn("🛡️ God Mode (Bật/Tắt)", 95, function()
 	end
 end)
 
--- Auto Kill
+-- Auto Kill Quái
 local autokill = false
 makeBtn("⚔️ Auto Kill Quái", 140, function()
 	autokill = not autokill
@@ -88,9 +101,7 @@ RunService.Heartbeat:Connect(function()
 	local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
 	for _,m in pairs(workspace:GetChildren()) do
-		if m.Name:lower():find("monster")
-		and m:FindFirstChild("Humanoid")
-		and m:FindFirstChild("HumanoidRootPart") then
+		if m.Name:lower():find("monster") and m:FindFirstChild("Humanoid") and m:FindFirstChild("HumanoidRootPart") then
 			if (m.HumanoidRootPart.Position - hrp.Position).Magnitude < 80 then
 				m.Humanoid.Health = 0
 			end
@@ -102,8 +113,51 @@ end)
 makeBtn("🎁 Auto Mở Rương", 185, function()
 	for _,c in pairs(workspace:GetDescendants()) do
 		if c.Name:lower():find("chest") and c:IsA("Model") then
-			player.Character.HumanoidRootPart.CFrame = c:GetModelCFrame()
-			task.wait(0.3)
+			local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+			if hrp then
+				hrp.CFrame = c:GetModelCFrame()
+				task.wait(0.3)
+			end
+		end
+	end
+end)
+
+-- Speed x2
+makeBtn("⚡ Speed x2", 230, function()
+	local hum = player.Character and player.Character:FindFirstChild("Humanoid")
+	if hum then
+		hum.WalkSpeed = 32
+	end
+end)
+
+-- Jump High
+makeBtn("🦘 Jump High", 275, function()
+	local hum = player.Character and player.Character:FindFirstChild("Humanoid")
+	if hum then
+		hum.JumpPower = 120
+	end
+end)
+
+-- Lửa Cháy To
+local fireRun = false
+makeBtn("🔥 Lửa Cháy To", 320, function()
+	fireRun = not fireRun
+end)
+
+RunService.Heartbeat:Connect(function()
+	if fireRun then
+		for _,v in pairs(workspace:GetDescendants()) do
+			if v:IsA("BasePart") and v.Name:lower():find("fire") then
+				-- Di chuyển ngẫu nhiên
+				local dx = math.random(-5,5)
+				local dz = math.random(-5,5)
+				v.CFrame = v.CFrame + Vector3.new(dx,0,dz)
+				
+				-- Tăng kích thước để cháy to hơn
+				if v.Size.X < 10 then
+					v.Size = v.Size + Vector3.new(0.2,0.2,0.2)
+				end
+			end
 		end
 	end
 end)
@@ -113,4 +167,4 @@ heart.MouseButton1Click:Connect(function()
 	menu.Visible = not menu.Visible
 end)
 
-print("❤️ HEART MENU LOADED")
+print("❤️ HEART MENU FULL LOADED")
