@@ -1,5 +1,5 @@
 -- =====================================
--- ❤️ HEART MENU FULL VERSION 2
+-- ❤️ HEART MENU FULL VERSION 4
 -- BẾN DU THUYỀN 101 (ALPHA)
 -- =====================================
 
@@ -21,19 +21,27 @@ heart.Image = "rbxassetid://7072718367"
 heart.BorderSizePixel = 0
 Instance.new("UICorner", heart).CornerRadius = UDim.new(1,0)
 
--- ===== MENU =====
+-- ===== SCROLLABLE MENU =====
 local menu = Instance.new("Frame", gui)
-menu.Size = UDim2.new(0,300,0,600)
+menu.Size = UDim2.new(0,300,0,400)
 menu.Position = UDim2.new(0,90,0,20)
 menu.BackgroundColor3 = Color3.fromRGB(30,30,30)
 menu.Visible = false
 menu.BorderSizePixel = 0
 Instance.new("UICorner", menu).CornerRadius = UDim.new(0,12)
 
+local scroll = Instance.new("ScrollingFrame", menu)
+scroll.Size = UDim2.new(1,0,1,0)
+scroll.CanvasSize = UDim2.new(0,0,0,700) -- Tăng nếu nhiều nút
+scroll.ScrollBarThickness = 6
+scroll.BackgroundTransparency = 1
+scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
 -- ===== TITLE =====
-local title = Instance.new("TextLabel", menu)
+local title = Instance.new("TextLabel", scroll)
 title.Size = UDim2.new(1,0,0,40)
-title.Text = "❤️ BẾN DU THUYỀN 101 - FULL"
+title.Position = UDim2.new(0,0,0,0)
+title.Text = "❤️ BẾN DU THUYỀN 101 - FULL V4"
 title.BackgroundTransparency = 1
 title.TextColor3 = Color3.fromRGB(255,120,140)
 title.Font = Enum.Font.GothamBold
@@ -74,7 +82,7 @@ end)
 
 -- ===== BUTTON MAKER =====
 local function makeBtn(text, y, callback)
-	local b = Instance.new("TextButton", menu)
+	local b = Instance.new("TextButton", scroll)
 	b.Size = UDim2.new(1,-20,0,38)
 	b.Position = UDim2.new(0,10,0,y)
 	b.Text = text
@@ -88,13 +96,12 @@ local function makeBtn(text, y, callback)
 end
 
 -- ===== VARIABLES =====
-local followItems = {} -- Gỗ/Phế Liệu/Thức Ăn
 local god = false
 local autokill = false
 local fireRun = false
 local autoPick = false
 
--- ===== FUNCTIONS =====
+-- ===== BUTTON FUNCTIONS =====
 
 -- Kill All Quái
 makeBtn("⚔️ Kill All Quái", 50, function()
@@ -105,41 +112,38 @@ makeBtn("⚔️ Kill All Quái", 50, function()
 	end
 end)
 
--- Tele Gỗ
+-- Dịch Chuyển Gỗ
 makeBtn("📦 Dịch Chuyển Gỗ", 95, function()
 	local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
-	followItems = {}
 	for _,v in pairs(workspace:GetDescendants()) do
 		if v:IsA("BasePart") and v.Name=="Wood" then
 			v.Anchored = false
-			table.insert(followItems, v)
+			v.CFrame = hrp.CFrame * CFrame.new(0,0,-4)
 		end
 	end
 end)
 
--- Tele Phế Liệu
+-- Dịch Chuyển Phế Liệu
 makeBtn("🗑️ Dịch Chuyển Phế Liệu", 140, function()
 	local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
-	followItems = {}
 	for _,v in pairs(workspace:GetDescendants()) do
 		if v:IsA("BasePart") and v.Name=="Scrap" then
 			v.Anchored = false
-			table.insert(followItems, v)
+			v.CFrame = hrp.CFrame * CFrame.new(0,0,-4)
 		end
 	end
 end)
 
--- Tele Thức Ăn
+-- Dịch Chuyển Thức Ăn
 makeBtn("🍖 Dịch Chuyển Thức Ăn", 185, function()
 	local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
-	followItems = {}
 	for _,v in pairs(workspace:GetDescendants()) do
 		if v:IsA("BasePart") and v.Name:lower():find("food") then
 			v.Anchored = false
-			table.insert(followItems, v)
+			v.CFrame = hrp.CFrame * CFrame.new(0,0,-4)
 		end
 	end
 end)
@@ -202,49 +206,41 @@ end)
 RunService.Heartbeat:Connect(function()
 	local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 	if hrp then
-		-- Dịch chuyển Gỗ/Phế Liệu/Thức Ăn
-		for _,v in pairs(followItems) do
-			if v and v.Parent then
-				v.CFrame = hrp.CFrame * CFrame.new(0,0,-4)
-			end
-		end
-	end
-
-	-- Auto Kill
-	if autokill and hrp then
-		for _,m in pairs(workspace:GetChildren()) do
-			if m.Name:lower():find("monster") and m:FindFirstChild("Humanoid") and m:FindFirstChild("HumanoidRootPart") then
-				if (m.HumanoidRootPart.Position - hrp.Position).Magnitude < 80 then
-					m.Humanoid.Health = 0
+		-- Auto Kill
+		if autokill then
+			for _,m in pairs(workspace:GetChildren()) do
+				if m.Name:lower():find("monster") and m:FindFirstChild("Humanoid") and m:FindFirstChild("HumanoidRootPart") then
+					if (m.HumanoidRootPart.Position - hrp.Position).Magnitude < 80 then
+						m.Humanoid.Health = 0
+					end
 				end
 			end
 		end
-	end
 
-	-- Lửa chạy + cháy to
-	if fireRun then
-		for _,v in pairs(workspace:GetDescendants()) do
-			if v:IsA("BasePart") and v.Name:lower():find("fire") then
-				local dx = math.random(-5,5)
-				local dz = math.random(-5,5)
-				v.CFrame = v.CFrame + Vector3.new(dx,0,dz)
-				if v.Size.X < 10 then
-					v.Size = v.Size + Vector3.new(0.2,0.2,0.2)
+		-- Lửa chạy + cháy to
+		if fireRun then
+			for _,v in pairs(workspace:GetDescendants()) do
+				if v:IsA("BasePart") and v.Name:lower():find("fire") then
+					local dx = math.random(-5,5)
+					local dz = math.random(-5,5)
+					v.CFrame = v.CFrame + Vector3.new(dx,0,dz)
+					if v.Size.X < 10 then
+						v.Size = v.Size + Vector3.new(0.2,0.2,0.2)
+					end
 				end
 			end
 		end
-	end
 
-	-- Auto nhặt hột sò
-	if autoPick and hrp then
-		for _,v in pairs(workspace:GetDescendants()) do
-			if v:IsA("BasePart") and v.Name:lower():find("coin") or v.Name:lower():find("shell") then
-				if (v.Position - hrp.Position).Magnitude < 20 then
-					-- Thêm vào leaderstats Coins nếu có
-					local stats = player:FindFirstChild("leaderstats")
-					if stats and stats:FindFirstChild("Coins") then
-						stats.Coins.Value += 1
-						v:Destroy()
+		-- Auto nhặt hột sò
+		if autoPick then
+			for _,v in pairs(workspace:GetDescendants()) do
+				if v:IsA("BasePart") and (v.Name:lower():find("coin") or v.Name:lower():find("shell")) then
+					if (v.Position - hrp.Position).Magnitude < 20 then
+						local stats = player:FindFirstChild("leaderstats")
+						if stats and stats:FindFirstChild("Coins") then
+							stats.Coins.Value += 1
+							v:Destroy()
+						end
 					end
 				end
 			end
@@ -252,4 +248,4 @@ RunService.Heartbeat:Connect(function()
 	end
 end)
 
-print("❤️ HEART MENU FULL V2 LOADED")
+print("❤️ HEART MENU FULL V4 LOADED")
